@@ -10,7 +10,7 @@ const passportLocalMongoose = require("passport-local-mongoose");
 const _ = require("lodash");
 const app = express();
 app.use(bodyParser.urlencoded({extended:true}));
-app.use(express.static("public"));
+app.set('views', path.join(__dirname, 'views'))
 app.set("view engine","ejs");
 app.set('trust proxy', 1);
 
