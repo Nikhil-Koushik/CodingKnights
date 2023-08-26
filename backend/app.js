@@ -19,7 +19,6 @@ cookie:{
     secure: true,
     maxAge:60000
        },
-store: new RedisStore(),
 secret: 'nikhilkoushik.',
 saveUninitialized: true,
 resave: false
