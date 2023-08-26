@@ -12,13 +12,26 @@ const app = express();
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.static("public"));
 app.set("view engine","ejs");
-
+app.set('trust proxy', 1);
 
 app.use(session({
-  secret: "nikhilkoushik.",
-  resave: false,
-  saveUninitialized: false
+cookie:{
+    secure: true,
+    maxAge:60000
+       },
+store: new RedisStore(),
+secret: 'nikhilkoushik.',
+saveUninitialized: true,
+resave: false
 }));
+
+app.use(function(req,res,next){
+if(!req.session){
+    return next(new Error('Oh no')) //handle error
+}
+next() //otherwise continue
+});
+
 app.use(passport.initialize());
 app.use(passport.session());
 mongoose.connect(process.env.MONGO,{useNewUrlParser:true,useUnifiedTopology:true});
