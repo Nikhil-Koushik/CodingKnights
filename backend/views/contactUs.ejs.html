@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <!-- Css and bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/nik.css">
+    <link rel="stylesheet" href="css/head.css">
+    <!-- Fontawesome -->
+    <script src="https://kit.fontawesome.com/e3c0eb4f90.js" crossorigin="anonymous"></script>
+    <style>
+      .asset{
+        text-align:center;
+      }
+      .n{
+        font-size:20px;
+        color: white;
+      }
+      .test{
+        text-decoration: none;
+      }
+      </style>
+      <script type = 'text/javascript'>
+          window.onload = function() {
+              var value = localStorage.getItem('myValue');
+              var output = document.getElementById('amma');
+              output.innerText = "Welcome "+value;
+          };
+      </script>
+    </head>
+    <body>
+  <header>
+    <nav class="navbar navbar-expand-lg bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand logo" href="loans.html">
+          <div class="container" >
+              <div class=""><i class="fa-sharp fa-regular fa-star-half-stroke fa-5x" style="color: #dc3545;"></i></div>
+              <div class=""><div class="cname" style="">
+                <pre class="compname" >Star
+  Finance
+  Coorporation</pre>
+              </div></div>
+          </div>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse turn" id="navbarNav" style="border-radius:20px; ">
+          <ul class="navbar-nav ms-auto" style="width:70%;align-items:center;">
+            <li class="nav-item">
+              <a class="f" aria-current="page" href="index.html" style="" onclick="localStorage.removeItem('myValue');">Logout</a>
+            </li>
+            <li class="nav-item">
+              <a class="f" aria-current="page" href="KYC.php" style="">KYC</a>
+            </li>
+            <li class="nav-item" >
+              <a class="f" href="loans.php" style="">Services</a>
+            </li>
+            <li class="nav-item">
+              <a class=" f" href="contactUs.php" style="">Contact us</a>
+            </li>
+            <li class="nav-item">
+              <a class="f" href="aboutUs.php" style="">About us</a>
+            </li>
+            <li class="nav-item">
+              <a class=" f" href="#" style="align-self:center;" id="amma"></a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+<div class="table" style="padding:60px 0;width:90%;margin: 23px 5% 23px 5%;background-color:#dc3545;border-radius:15px;">
+  <div class="row" style="">
+    <div class="col-12 asset" style="font-size:30px;margin-left: 0.89%;width: 98.2%;background-color:white;color:#dc3545;">
+      Contact Us
+    </div>
+  </div>
+  <div class="" style="display:grid;grid-template-columns:100px 100px 100px 100px 100px;margin-top:40px;justify-content:space-evenly;">
+    <div class="asset" >
+      <a href="tel:+918499973909" class="test" style="padding-right: 0px;padding-left: 0px;"><i class="fa-solid fa-phone fa-5x" style="color: #ffffff;"></i>  <br><span class="n" style="text-align:center;">Phone</span></a>
+    </div>
+    <div class="asset">
+      <a href="mailto:nikhil4b4@sasi.ac.in? subject=" class="test" style="padding-right: 0px;padding-left: 0px;"><i class="fa-solid fa-envelope fa-5x" style="color: #ffffff;"></i><br><span class="n" style="text-align:center;">e-Mail</span></a>
+    </div>
+    <div class="asset">
+      <a href="tel:+918499973909" class="test" style="padding-right: 0px;padding-left: 0px;"><i class="fa-brands fa-whatsapp fa-5x" style="color: #ffffff;"></i><br><span class="n" style="text-align:center;">Whatsapp</span></a>
+    </div>
+    <div class="asset" >
+      <a href="https://instagram.com/_nikhil.koushik_?igshid=YmMyMTA2M2Y=" class="test" style="padding-right: 0px;padding-left: 0px;"><i class="fa-brands fa-instagram fa-5x" style="color: #ffffff;"></i><br><span class="n" style="text-align:center;">Instagram</span></a>
+    </div>
+    <div class="asset">
+      <a href="https://www.linkedin.com/in/nikhil-koushik-974a20253/" class="test" style="padding-right: 0px;padding-left: 0px;"><i class="fa-brands fa-linkedin fa-5x" style="color: #ffffff;"></i><br><span class="n" style="text-align:center;">LinkedIn</span></a>
+    </div>
+  </div>
+  <div class="row" style="margin-top:45px;">
+    <div class="col-12 asset" style="font-size:30px;margin-left: 0.89%;width: 98.2%;background-color:white;color:#dc3545;">
+      Address
+    </div>
+  </div>
+  <div class="row" style="margin-top:45px;">
+    <div class="col-12 asset" style="font-size:30px;color:white;">
+      <span style="font-size:20px;">Sasi Institute of Technology and Engineering, Tadepalligudem,<br> West Godavari District, Andhra Pradesh, 534112.</span>
+    </div>
+  </div>
+</div>
+  </body>
+</html>

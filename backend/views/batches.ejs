@@ -1,0 +1,15 @@
+<%-include("partials/header")-%>
+
+<div class="batches">
+      <% const a = data.batchDays.dates;%>
+      <%(a).forEach((exe) => {%>
+      <div class="batch">
+        <div class="batch-name"><%= exe.date%></div>
+        <a href='/beginner/<%= data.batchGetter %>/<%=exe.date%>' style="text-decoration: none;">
+        <div class="open-name">Open ></div></a>
+      </div>
+      <%})%>
+
+
+</div>
+<%-include("partials/footer")-%>
