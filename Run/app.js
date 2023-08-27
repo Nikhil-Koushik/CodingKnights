@@ -18,9 +18,9 @@ app.set('trust proxy', 1);
 const MemoryStore = require('memorystore')(session)
 
 app.use(session({
-    cookie: { maxAge: 86400000 },
+    cookie: { maxAge: 60000 },
     store: new MemoryStore({
-      checkPeriod: 86400000 // prune expired entries every 24h
+      checkPeriod: 60000 // prune expired entries every 24h
     }),
     resave: false,
     secret: 'keyboard cat'
