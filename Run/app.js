@@ -23,7 +23,8 @@ app.use(session({
       checkPeriod: 86400000 // prune expired entries every 24h
     }),
     resave: false,
-    secret: 'keyboard cat'
+    saveUninitialized: true,
+    secret: process.env.SECRET
 }))
 
 app.use(passport.initialize());
@@ -157,7 +158,6 @@ app.get("/beginner/:batch/:day",function(req,res){
         if (batch.batchGetter === req.params.batch){
           batch.batchDays.dates.forEach((specificDate, i) => {
             if (specificDate.date === req.params.day){
-              console.log(specificDate);
               res.render("days",{un:req.user.username,batch:req.params.batch,day:req.params.day,data:specificDate})
             }
           });
@@ -179,7 +179,6 @@ app.post("/beginner/:batch/:day",function(req,res){
           batch.batchDays.dates.forEach((specificDate, k) => {
             if (specificDate.date === req.params.day){
               batches[i].batchArray[j].batchDays.dates[k].comments.push(cmnt);
-              console.log(batches[i].batchArray[j].batchDays.dates[k]);
               batches[i].save();
               res.redirect("/beginner/"+req.params.batch+"/"+req.params.day);
 
