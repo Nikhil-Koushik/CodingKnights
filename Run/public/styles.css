@@ -527,6 +527,7 @@
     margin:0 5%;
   }
   .left>h2{
+    font-size: 26px;
     font-weight: 700;
   }
   .left>p{
@@ -542,6 +543,7 @@
   }
   .commTitle{
     font-weight: 700;
+    font-size: 26px;
     padding-bottom: 8px;
   }
   .commentsUser{
