@@ -124,100 +124,47 @@ app.post('/login',
   }
 );
 
-// app.get("/beginner",function(req,res){
-//   Batch.find().then(function(batches){
-//     batches.forEach((item, i) => {
-//       res.render("beginner",{un:req.user.username,arr:item.batchArray});
-//     });
-//     }).catch(function(err){console.log(err);});
-//   });
-
-app.get("/beginner", async function(req, res){
-  const batches = await Batch.find();
-  if (!batches.length) return res.send("No batches");
-
-  res.render("beginner", {
-    un: req.user.username,
-    arr: batches[0].batchArray
+app.get("/beginner",function(req,res){
+  Batch.find().then(function(batches){
+    batches.forEach((item, i) => {
+      res.render("beginner",{un:req.user.username,arr:item.batchArray});
+    });
+    }).catch(function(err){console.log(err);});
   });
-});
 
 
-
-// app.get("/beginner/:batch",function(req,res){
-//   Batch.find().then(function(batches){
-//     batches.forEach((item, i) => {
-//       const data = item.batchArray;
-//       data.forEach((batch, i) => {
-//         if (batch.batchGetter === req.params.batch){
-//           res.render("batches",{un:req.user.username,data:batch})
-//         }
-//       });
-//     });
-//   }).catch(function(err){console.log(err);});
-// });
-
-app.get("/beginner/:batch", async function(req,res){
-  const batches = await Batch.find();
-
-  for (const item of batches) {
-    for (const batch of item.batchArray) {
-      if (batch.batchGetter === req.params.batch) {
-        return res.render("batches", {
-          un: req.user.username,
-          data: batch
-        });
-      }
-    }
-  }
-
-  res.status(404).send("Batch not found");
-});
-
-
-// app.get("/beginner/:batch/:day",function(req,res){
-//   Batch.find().then(function(batches){
-//     batches.forEach((item, i) => {
-//       const data = item.batchArray;
-//       data.forEach((batch, i) => {
-//         if (batch.batchGetter === req.params.batch){
-//           batch.batchDays.dates.forEach((specificDate, i) => {
-//             if (specificDate.date === req.params.day){
-//               res.render("days",{un:req.user.username,batch:req.params.batch,day:req.params.day,data:specificDate})
-//             }
-//           });
-
-//         }
-//       });
-
-//     });
-
-//   }).catch(function(err){console.log(err);});
-// });
-
-app.get("/beginner/:batch/:day", async function(req,res){
-  const batches = await Batch.find();
-
-  for (const item of batches) {
-    for (const batch of item.batchArray) {
-      if (batch.batchGetter === req.params.batch) {
-        for (const specificDate of batch.batchDays.dates) {
-          if (specificDate.date === req.params.day) {
-            return res.render("days", {
-              un: req.user.username,
-              batch: req.params.batch,
-              day: req.params.day,
-              data: specificDate
-            });
-          }
+app.get("/beginner/:batch",function(req,res){
+  Batch.find().then(function(batches){
+    batches.forEach((item, i) => {
+      const data = item.batchArray;
+      data.forEach((batch, i) => {
+        if (batch.batchGetter === req.params.batch){
+          res.render("batches",{un:req.user.username,data:batch})
         }
-      }
-    }
-  }
-
-  res.status(404).send("Day not found");
+      });
+    });
+  }).catch(function(err){console.log(err);});
 });
 
+app.get("/beginner/:batch/:day",function(req,res){
+  Batch.find().then(function(batches){
+    batches.forEach((item, i) => {
+      const data = item.batchArray;
+      data.forEach((batch, i) => {
+        if (batch.batchGetter === req.params.batch){
+          batch.batchDays.dates.forEach((specificDate, i) => {
+            if (specificDate.date === req.params.day){
+              res.render("days",{un:req.user.username,batch:req.params.batch,day:req.params.day,data:specificDate})
+            }
+          });
+
+        }
+      });
+
+    });
+
+  }).catch(function(err){console.log(err);});
+});
 app.post("/beginner/:batch/:day",function(req,res){
   const cmnt = {User:req.user.username,Comment: req.body.comment};
   Batch.find().then(function(batches){
@@ -229,7 +176,7 @@ app.post("/beginner/:batch/:day",function(req,res){
             if (specificDate.date === req.params.day){
               batches[i].batchArray[j].batchDays.dates[k].comments.push(cmnt);
               batches[i].save();
-              return res.redirect("/beginner/"+req.params.batch+"/"+req.params.day);
+              res.redirect("/beginner/"+req.params.batch+"/"+req.params.day);
 
             }
           });
