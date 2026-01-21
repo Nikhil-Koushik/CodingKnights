@@ -1,254 +1,238 @@
-//jshint esversion:6
+// jshint esversion:6
 require("dotenv").config();
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const path = require('path');
+const path = require("path");
 const session = require("express-session");
 const passport = require("passport");
-const findOrCreate = require("mongoose-findorcreate");
 const passportLocalMongoose = require("passport-local-mongoose");
+const findOrCreate = require("mongoose-findorcreate");
 const _ = require("lodash");
+
 const app = express();
-app.use(bodyParser.urlencoded({extended:true}));
-app.use(express.static(path.join(__dirname, '/public')));
-app.set("view engine","ejs");
-app.set('trust proxy', 1);
 
-const MemoryStore = require('memorystore')(session)
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
+app.set("view engine", "ejs");
+app.set("trust proxy", 1);
 
-app.use(session({
+app.use(
+  session({
+    secret: process.env.SECRET,
     resave: false,
-    saveUninitialized: true,
-    secret: process.env.SECRET
-}))
+    saveUninitialized: false
+  })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
-mongoose.connect(process.env.MONGO,{useNewUrlParser:true,useUnifiedTopology:true});
-// mongoose.connect("",{useNewUrlParser:true,useUnifiedTopology:true});
+
+mongoose.connect(process.env.MONGO, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
 
 const userSchema = new mongoose.Schema({
   email: String,
   password: String,
   googleId: String
-})
+});
 
 userSchema.plugin(passportLocalMongoose);
 userSchema.plugin(findOrCreate);
 
-const User = new mongoose.model("User",userSchema);
+const User = mongoose.model("User", userSchema);
 
 passport.use(User.createStrategy());
 
-passport.serializeUser(function(user, cb) {
-  process.nextTick(function() {
-    return cb(null, user.id);
-  });
+passport.serializeUser((user, cb) => cb(null, user.id));
+passport.deserializeUser(async (id, cb) => {
+  try {
+    const user = await User.findById(id);
+    cb(null, user);
+  } catch (err) {
+    cb(err);
+  }
 });
 
-passport.deserializeUser(function(id, cb) {
-  User.findById(id)
-  .then(function(user)
-    {
-      return cb(null, user);
-    })
-  .catch(function(err)
-    {
-      return cb(err);
-    })
-
-});
-
-
-const batchSchema = {
+const batchSchema = new mongoose.Schema({
   batchArray: [
     {
-      batchName : String,
+      batchName: String,
       batchGetter: String,
       batchDays: {
-                    dates: [
-                              {
-                                date: String,
-                                title: String,
-                                content: String,
-                                zoom: String,
-                                doc: String,
-                                comments: [{User:String,Comment:String}]
-                              }
-                          ]
-                  }
+        dates: [
+          {
+            date: String,
+            title: String,
+            content: String,
+            zoom: String,
+            doc: String,
+            comments: [{ User: String, Comment: String }]
+          }
+        ]
+      }
     }
   ]
+});
+
+const Batch = mongoose.model("Batch", batchSchema);
+
+function ensureAuth(req, res, next) {
+  if (req.isAuthenticated()) return next();
+  res.redirect("/login");
 }
 
-const Batch = mongoose.model("Batch",batchSchema);
-
-app.get("/",function(req,res){
-  res.render("login",{msg:""});
-})
-
-app.get("/"+process.env.REGISTER,function(req,res){
-  res.render("register");
-})
-app.post("/"+process.env.REGISTER,function(req,res){
-  User.register({username: req.body.username},req.body.password,function(err,user){
-    if (err){
-      res.redirect("/registerNikhilRightNow");
-    } else {
-      passport.authenticate("local")(req,res,function(){
-        res.redirect("/home");
-      });
-    }
-  });
-})
-app.get("/home",function(req,res){
-  if (req.isAuthenticated()){
-    res.render("home",{un:req.user.username});
-  } else {
-    res.redirect("/login");
-  }
-});
-app.get("/login",function(req,res){
-  if (req.isAuthenticated()){
-    res.render("home",{un:req.user.username});
-  } else {
-    res.render("login",{msg:""});
-  }
+app.get("/", (req, res) => {
+  res.render("login", { msg: "" });
 });
 
-app.post('/login',
-  passport.authenticate('local', { successRedirect: '/home', failWithError: true }),
-  function(err, req, res, next) {
-    return res.render('login',{msg:"Invalid User"});
+app.get("/login", (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.redirect("/home");
   }
+  res.render("login", { msg: "" });
+});
+
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/home",
+    failureRedirect: "/login",
+    failureMessage: true
+  })
 );
 
-app.get("/beginner",function(req,res){
-  Batch.find().then(function(batches){
-    batches.forEach((item, i) => {
-      res.render("beginner",{un:req.user.username,arr:item.batchArray});
+app.get("/logout", (req, res, next) => {
+  req.logout(err => {
+    if (err) return next(err);
+    res.redirect("/");
+  });
+});
+
+app.get("/" + process.env.REGISTER, (req, res) => {
+  res.render("register");
+});
+
+app.post("/" + process.env.REGISTER, async (req, res) => {
+  try {
+    const user = await User.register(
+      { username: req.body.username },
+      req.body.password
+    );
+    req.login(user, err => {
+      if (err) return res.redirect("/login");
+      res.redirect("/home");
     });
-    }).catch(function(err){console.log(err);});
+  } catch (err) {
+    res.redirect("/" + process.env.REGISTER);
+  }
+});
+
+app.get("/home", ensureAuth, (req, res) => {
+  res.render("home", { un: req.user.username });
+});
+
+app.get("/beginner", ensureAuth, async (req, res) => {
+  const batchDoc = await Batch.findOne();
+  if (!batchDoc) return res.status(404).send("No batches found");
+
+  res.render("beginner", {
+    un: req.user.username,
+    arr: batchDoc.batchArray
+  });
+});
+
+app.get("/beginner/:batch", ensureAuth, async (req, res) => {
+  const batchDoc = await Batch.findOne({
+    "batchArray.batchGetter": req.params.batch
   });
 
+  if (!batchDoc) return res.status(404).send("Batch not found");
 
-app.get("/beginner/:batch",function(req,res){
-  Batch.find().then(function(batches){
-    batches.forEach((item, i) => {
-      const data = item.batchArray;
-      data.forEach((batch, i) => {
-        if (batch.batchGetter === req.params.batch){
-          res.render("batches",{un:req.user.username,data:batch})
-        }
-      });
-    });
-  }).catch(function(err){console.log(err);});
-});
+  const batch = batchDoc.batchArray.find(
+    b => b.batchGetter === req.params.batch
+  );
 
-app.get("/beginner/:batch/:day",function(req,res){
-  Batch.find().then(function(batches){
-    batches.forEach((item, i) => {
-      const data = item.batchArray;
-      data.forEach((batch, i) => {
-        if (batch.batchGetter === req.params.batch){
-          batch.batchDays.dates.forEach((specificDate, i) => {
-            if (specificDate.date === req.params.day){
-              res.render("days",{un:req.user.username,batch:req.params.batch,day:req.params.day,data:specificDate})
-            }
-          });
-
-        }
-      });
-
-    });
-
-  }).catch(function(err){console.log(err);});
-});
-app.post("/beginner/:batch/:day",function(req,res){
-  const cmnt = {User:req.user.username,Comment: req.body.comment};
-  Batch.find().then(function(batches){
-    batches.forEach((item, i) => {
-      const data = item.batchArray;
-      data.forEach((batch, j) => {
-        if (batch.batchGetter === req.params.batch){
-          batch.batchDays.dates.forEach((specificDate, k) => {
-            if (specificDate.date === req.params.day){
-              batches[i].batchArray[j].batchDays.dates[k].comments.push(cmnt);
-              batches[i].save();
-              res.redirect("/beginner/"+req.params.batch+"/"+req.params.day);
-
-            }
-          });
-
-        }
-      });
-
-    });
-
-  }).catch(function(err){console.log(err);});
-  // Batch.findOne({batchGetter: req.params.batch}).then(
-  //   function(foundList){
-  //     foundList.batchDays.dates.forEach((item, i) => {
-  //       if (item.date === req.params.day){
-  //         // console.log(req);
-  //         foundList.batchDays.dates[i].comments.push({"User":req.user.username,"Comment":cmnt});
-  //         foundList.save();
-  //         res.redirect("/beginner/"+req.params.batch+"/"+req.params.day);
-  //       }
-  //     });
-  //   }
-  // ).catch(function(err){console.log(err);});
-});
-app.get("/logout",function(req,res){
-  req.logout(function(err){
-    console.log(err);
+  res.render("batches", {
+    un: req.user.username,
+    data: batch
   });
-  res.redirect("/");
 });
 
-app.get("/aboutUs",function(req,res){
-  res.render("aboutUs",{un:req.user.username});
-})
+app.get("/beginner/:batch/:day", ensureAuth, async (req, res) => {
+  const batchDoc = await Batch.findOne({
+    "batchArray.batchGetter": req.params.batch
+  });
 
-app.get("/contactUs",function(req,res){
-  res.render("contactUs",{un:req.user.username});
-})
+  if (!batchDoc) return res.status(404).send("Batch not found");
 
-app.get("/beginner/:batch/:day/zoom/:zoom",function(req,res){
-  res.status(301).redirect("https://us05web.zoom.us/j/"+req.params.zoom);
-})
-app.get("/beginner/:batch/:day/doc/:doc",function(req,res){
-  res.status(301).redirect("https://drive.google.com/file/d/"+req.params.doc+"/view?usp=sharing/");
-})
+  const batch = batchDoc.batchArray.find(
+    b => b.batchGetter === req.params.batch
+  );
 
+  const day = batch.batchDays.dates.find(
+    d => d.date === req.params.day
+  );
 
+  if (!day) return res.status(404).send("Day not found");
 
-app.listen(3000);
+  res.render("days", {
+    un: req.user.username,
+    batch: req.params.batch,
+    day: req.params.day,
+    data: day
+  });
+});
 
+app.post("/beginner/:batch/:day", ensureAuth, async (req, res) => {
+  const comment = {
+    User: req.user.username,
+    Comment: req.body.comment
+  };
 
+  const batchDoc = await Batch.findOne({
+    "batchArray.batchGetter": req.params.batch
+  });
 
+  if (!batchDoc) return res.status(404).send("Batch not found");
 
-// const l = ['Batch-1'];
-// l.forEach((item) => {
-//   const batch = new Batch({
-//     batchName: item,
-//     batchGetter: _.lowerFirst(item),
-//     batchDays: {
-//     dates: [
-//       {
-//         "date" : "Day-1",
-//           "title" : "Walking through",
-//           "content" : "Teaching",
-//           "zoom": "",
-//           "doc":"",
-//           "comments" : [
-//               "Miami",
-//               "Jhonas"
-//             ]
-//       }
-//     ]
-//     }
-//   });
-//   batch.save();
-// });
+  const batch = batchDoc.batchArray.find(
+    b => b.batchGetter === req.params.batch
+  );
+
+  const day = batch.batchDays.dates.find(
+    d => d.date === req.params.day
+  );
+
+  if (!day) return res.status(404).send("Day not found");
+
+  day.comments.push(comment);
+  await batchDoc.save();
+
+  res.redirect(`/beginner/${req.params.batch}/${req.params.day}`);
+});
+
+app.get("/aboutUs", ensureAuth, (req, res) => {
+  res.render("aboutUs", { un: req.user.username });
+});
+
+app.get("/contactUs", ensureAuth, (req, res) => {
+  res.render("contactUs", { un: req.user.username });
+});
+
+app.get("/beginner/:batch/:day/zoom/:zoom", ensureAuth, (req, res) => {
+  res.redirect(`https://us05web.zoom.us/j/${req.params.zoom}`);
+});
+
+app.get("/beginner/:batch/:day/doc/:doc", ensureAuth, (req, res) => {
+  res.redirect(
+    `https://drive.google.com/file/d/${req.params.doc}/view?usp=sharing`
+  );
+});
+
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
+});
